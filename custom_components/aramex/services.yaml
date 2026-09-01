@@ -1,0 +1,23 @@
+track_parcel:
+  fields:
+    tracking_code:
+      required: true
+      example: "EXAMPLE123456"
+      selector:
+        text:
+    country:
+      required: false
+      example: "AU"
+      selector:
+        select:
+          options:
+            - "AU"
+            - "NZ"
+
+untrack_parcel:
+  fields:
+    tracking_code:
+      required: true
+      example: "EXAMPLE123456"
+      selector:
+        text:

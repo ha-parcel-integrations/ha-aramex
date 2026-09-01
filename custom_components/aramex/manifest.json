@@ -1,0 +1,15 @@
+{
+  "domain": "aramex",
+  "name": "Aramex",
+  "codeowners": [
+    "@peternijssen"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/ha-parcel-integrations/ha-aramex",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/ha-parcel-integrations/ha-aramex/issues",
+  "quality_scale": "silver",
+  "requirements": [],
+  "version": "0.9.0"
+}
