@@ -6,7 +6,7 @@
         "title": "Aramex instellen",
         "description": "Deze integratie ondersteunt alleen Aramex Australië en Nieuw-Zeeland. Kies een land om een hub te maken; pakketten in die hub worden nooit bij het andere land geprobeerd.",
         "data": {
-          "country": "Landdataset"
+          "country": "Land"
         }
       }
     },
@@ -99,7 +99,7 @@
           "description": "De Aramex-trackingcode."
         },
         "country": {
-          "name": "Landdataset",
+          "name": "Land",
           "description": "Alleen nodig wanneer er meerdere Aramex-hubs zijn geconfigureerd."
         }
       }

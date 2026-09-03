@@ -6,7 +6,7 @@
         "title": "Set up Aramex",
         "description": "This integration supports Aramex Australia and New Zealand only. Select a country to create its hub; labels added to that hub are never tried against the other country.",
         "data": {
-          "country": "Country dataset"
+          "country": "Country"
         }
       }
     },
@@ -99,7 +99,7 @@
           "description": "The Aramex tracking code."
         },
         "country": {
-          "name": "Country dataset",
+          "name": "Country",
           "description": "Required only when more than one Aramex hub is configured."
         }
       }
