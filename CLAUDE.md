@@ -36,8 +36,11 @@ you act in one of these areas:
   status/code**, it needs an `awaiting_pickup` sensor — see *Parcel contract*
   in `CONVENTIONS.md`. Say "pickup point", not "ServicePoint"/"parcel
   shop"/"locker", for the generic concept. `ha-dhl-nl`, `ha-dpd`, `ha-gls`,
-  `ha-inpost` are reference implementations; `aramex` here does not
-  demonstrate it yet.
+  `ha-inpost` are reference implementations. `aramex` is **exempt**: the AU/NZ
+  scan feed has no pickup-point delivery method — none of the observed scan
+  codes maps to `AT_PICKUP_POINT`, and `pickup`/`pickup_point` are always
+  `False`/`None` — so there is deliberately no `awaiting_pickup` sensor. Add
+  one if a real parcel ever surfaces a pickup-point code.
 
 ## Carrier-specific notes
 
