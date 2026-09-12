@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import re
 from typing import Any
 
 import voluptuous as vol
@@ -31,10 +30,6 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-# The public AU/NZ tracker does not document one universal label syntax.
-# Preserve the user's case and allow only trimmed 6–20-character alphanumerics.
-_TRACKING_CODE_RE = re.compile(r"^[A-Za-z0-9]{6,20}$")
-
 _HUB_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_COUNTRY): selector.SelectSelector(
@@ -56,8 +51,8 @@ def normalize_tracking_code(value: str) -> str:
 
 
 def valid_tracking_code(value: str) -> bool:
-    """Whether ``value`` looks like an Aramex tracking code."""
-    return bool(_TRACKING_CODE_RE.match(value))
+    """Accept every non-empty code; the AU/NZ tracker's real formats vary too much to gate on."""
+    return bool(value)
 
 
 def _current_parcels(entry: ConfigEntry) -> list[dict[str, str]]:

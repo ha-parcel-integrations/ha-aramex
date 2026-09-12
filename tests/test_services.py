@@ -53,28 +53,30 @@ async def test_track_parcel_adds_to_options(hass):
     assert parcels == [{CONF_TRACKING_CODE: "EXAMPLE999999"}]
 
 
-async def test_track_parcel_rejects_separators(hass):
+async def test_track_parcel_accepts_a_code_with_separators(hass):
     entry = await _setup(hass)
     with patch(
         "custom_components.aramex.api.AramexApiClient.async_get_parcel",
         new=AsyncMock(return_value=_SAMPLE),
     ):
-        with pytest.raises(ServiceValidationError):
-            await hass.services.async_call(
-                DOMAIN,
-                "track_parcel",
-                {CONF_TRACKING_CODE: "example-999 999"},
-                blocking=True,
-            )
+        await hass.services.async_call(
+            DOMAIN,
+            "track_parcel",
+            {CONF_TRACKING_CODE: "example-999 999"},
+            blocking=True,
+        )
+        await hass.async_block_till_done()
 
-    assert entry.options[CONF_PARCELS] == []
+    assert entry.options[CONF_PARCELS] == [
+        {CONF_TRACKING_CODE: "example-999 999"}
+    ]
 
 
-async def test_track_parcel_rejects_invalid_code(hass):
+async def test_track_parcel_rejects_empty_code(hass):
     await _setup(hass)
     with pytest.raises(ServiceValidationError):
         await hass.services.async_call(
-            DOMAIN, "track_parcel", {CONF_TRACKING_CODE: "abc"}, blocking=True
+            DOMAIN, "track_parcel", {CONF_TRACKING_CODE: "   "}, blocking=True
         )
 
 
