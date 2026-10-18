@@ -127,3 +127,20 @@ def test_sort_and_delivered_filter():
         options={"delivered_filter_type": "days", "delivered_filter_amount": 1},
     )
     assert apply_delivered_filter([{"delivered_at": None}], days_entry)
+
+
+def test_zone_names_is_the_countrys_zone():
+    from custom_components.aramex.parcels import zone_names
+
+    assert zone_names({"country": "AU"}) == {"Australia/Sydney"}
+    assert zone_names({"country": "NZ"}) == {"Pacific/Auckland"}
+    assert zone_names({"country": "XX"}) == set()
+
+
+def test_eta_window_uses_the_zones_the_coordinator_resolved():
+    from zoneinfo import ZoneInfo
+
+    zones = {"Australia/Sydney": ZoneInfo("Australia/Sydney")}
+    planned_from, planned_to = eta_window("14/02/2025", "AU", zones)
+    assert planned_from == "2025-02-14T00:00:00+11:00"
+    assert planned_to.startswith("2025-02-14T23:59:59")

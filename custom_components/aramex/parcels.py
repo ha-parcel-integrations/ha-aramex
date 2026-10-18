@@ -15,9 +15,10 @@ and should be left alone.
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime, time, timedelta, timezone
+from collections.abc import Mapping
+from datetime import date, datetime, time, timedelta, timezone, tzinfo
 from typing import Any
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from homeassistant.config_entries import ConfigEntry
 
@@ -260,7 +261,33 @@ def _parse_eta_date(value: Any) -> date | None:
         return None
 
 
-def eta_window(eta_date_str: Any, country: str | None) -> tuple[str | None, str | None]:
+def _resolve_zone(
+    name: str, zones: Mapping[str, tzinfo | None] | None
+) -> tzinfo | None:
+    """Return the zone for ``name``, or ``None`` when it is unknown.
+
+    The coordinator resolves zones off the event loop and passes them in;
+    ``zones=None`` (direct callers, tests) falls back to ``ZoneInfo``.
+    """
+    if zones is not None:
+        return zones.get(name)
+    try:
+        return ZoneInfo(name)
+    except (ZoneInfoNotFoundError, ValueError):
+        return None
+
+
+def zone_names(raw: dict) -> set[str]:
+    """Return the IANA zone a parcel's ETA is read in, for the coordinator to resolve."""
+    name = TIMEZONES.get(raw.get("country") or "")
+    return {name} if name else set()
+
+
+def eta_window(
+    eta_date_str: Any,
+    country: str | None,
+    zones: Mapping[str, tzinfo | None] | None = None,
+) -> tuple[str | None, str | None]:
     """Return ``(planned_from, planned_to)`` as an all-day window in ``country``'s timezone.
 
     ``DeliveryETADate`` is a date only, so it becomes the whole local day
@@ -270,14 +297,19 @@ def eta_window(eta_date_str: Any, country: str | None) -> tuple[str | None, str 
     if eta_date is None:
         return None, None
     tz_name = TIMEZONES.get(country or "")
-    tz = ZoneInfo(tz_name) if tz_name else timezone.utc
+    tz = (_resolve_zone(tz_name, zones) if tz_name else timezone.utc) or timezone.utc
     return (
         datetime.combine(eta_date, time.min, tz).isoformat(),
         datetime.combine(eta_date, time.max, tz).isoformat(),
     )
 
 
-def normalize_parcel(raw: dict, *, include_history: bool = False) -> dict:
+def normalize_parcel(
+    raw: dict,
+    *,
+    include_history: bool = False,
+    zones: Mapping[str, tzinfo | None] | None = None,
+) -> dict:
     """Return a carrier-agnostic parcel dict with the payload under ``raw``.
 
     The **keys of the returned dict are
@@ -314,7 +346,7 @@ def normalize_parcel(raw: dict, *, include_history: bool = False) -> dict:
     country = raw.get("country")
 
     planned_from, planned_to = (
-        (None, None) if delivered else eta_window(result.get("DeliveryETADate"), country)
+        (None, None) if delivered else eta_window(result.get("DeliveryETADate"), country, zones)
     )
 
     return {

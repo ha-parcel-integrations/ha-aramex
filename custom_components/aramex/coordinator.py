@@ -39,6 +39,7 @@ from .parcels import (
     normalize_parcel,
     sanitize_tracking_payload,
     sort_parcels_by_ts,
+    zone_names,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -336,8 +337,13 @@ class AramexCoordinator(DataUpdateCoordinator[list[dict]]):
             raise UpdateFailed("Aramex unreachable for all tracked parcels")
 
         include_history = self._include_history
+        zones = {
+            name: await dt_util.async_get_time_zone(name)
+            for raw in raws_by_code.values()
+            for name in zone_names(raw)
+        }
         entries = [
-            (code, normalize_parcel(raw, include_history=include_history))
+            (code, normalize_parcel(raw, include_history=include_history, zones=zones))
             for code, raw in raws_by_code.items()
         ]
         active = [parcel for _, parcel in entries if not parcel["delivered"]]
