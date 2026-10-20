@@ -5,7 +5,6 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import voluptuous as vol
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -14,6 +13,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers import selector
+import voluptuous as vol
 
 from .const import (
     CONF_COUNTRY,
@@ -63,7 +63,7 @@ def _current_parcels(entry: ConfigEntry) -> list[dict[str, str]]:
 def _clean_tracking_codes(values: list[str] | str | None) -> list[str]:
     """Normalise, drop blanks, and de-duplicate tracking codes."""
     codes: list[str] = []
-    for value in ([values] if isinstance(values, str) else values or []):
+    for value in [values] if isinstance(values, str) else values or []:
         code = normalize_tracking_code(value)
         if code and code not in codes:
             codes.append(code)

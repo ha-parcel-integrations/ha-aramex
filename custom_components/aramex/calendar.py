@@ -1,4 +1,5 @@
 """Calendar platform for the Aramex parcel tracker integration."""
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta
@@ -20,14 +21,15 @@ PARALLEL_UPDATES = 0
 _DEFAULT_EVENT_DURATION = timedelta(hours=1)
 
 
-
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: AramexConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Aramex deliveries calendar from a config entry."""
-    async_add_entities([AramexDeliveriesCalendar(entry.runtime_data.coordinator, entry)])
+    async_add_entities(
+        [AramexDeliveriesCalendar(entry.runtime_data.coordinator, entry)]
+    )
 
 
 class AramexDeliveriesCalendar(CoordinatorEntity[AramexCoordinator], CalendarEntity):

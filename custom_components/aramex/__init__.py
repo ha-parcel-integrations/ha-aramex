@@ -1,8 +1,9 @@
 """Aramex parcel tracker custom component for Home Assistant."""
+
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
+import logging
 
 from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.core import HomeAssistant
@@ -57,9 +58,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: AramexConfigEntry) -> bo
     return True
 
 
-async def _async_options_updated(
-    hass: HomeAssistant, entry: AramexConfigEntry
-) -> None:
+async def _async_options_updated(hass: HomeAssistant, entry: AramexConfigEntry) -> None:
     """Apply changed options by refreshing the coordinator."""
     await entry.runtime_data.coordinator.async_request_refresh()
 

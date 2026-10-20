@@ -1,14 +1,12 @@
 """Tests for the Aramex API client."""
+
 import json
 from unittest.mock import AsyncMock, MagicMock
 
 import aiohttp
 import pytest
 
-from custom_components.aramex.api import (
-    AramexApiClient,
-    AramexApiError,
-)
+from custom_components.aramex.api import AramexApiClient, AramexApiError
 
 CODE = "MP0085494934"
 
@@ -38,7 +36,10 @@ async def test_get_parcel_returns_parcel_on_success():
 
     assert parcel["tracking_code"] == CODE
     assert parcel["country"] == "AU"
-    assert session.get.call_args.kwargs["params"] == {"LabelNo": CODE, "dataFormat": "json"}
+    assert session.get.call_args.kwargs["params"] == {
+        "LabelNo": CODE,
+        "dataFormat": "json",
+    }
 
 
 async def test_get_parcel_returns_none_when_not_found():
@@ -51,9 +52,7 @@ async def test_get_parcel_returns_none_when_not_found():
 
 async def test_get_parcel_returns_none_on_missing_scans():
     """A 200 without a scan list is the normal semantic miss shape."""
-    client = AramexApiClient(
-        _session_returning(200, {"result": {"LabelNumber": CODE}})
-    )
+    client = AramexApiClient(_session_returning(200, {"result": {"LabelNumber": CODE}}))
     assert await client.async_get_parcel(CODE) is None
 
 

@@ -13,6 +13,7 @@ The client keeps the
 * lets ``aiohttp.ClientError`` propagate untouched — ``DataUpdateCoordinator``
   already wraps those into ``UpdateFailed``.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -52,7 +53,9 @@ class AramexApiClient:
         """Initialise the client with an aiohttp session."""
         self._session = session
 
-    async def async_get_parcel(self, tracking_code: str, country: str = "AU") -> dict[str, Any] | None:
+    async def async_get_parcel(
+        self, tracking_code: str, country: str = "AU"
+    ) -> dict[str, Any] | None:
         """Fetch one parcel's tracking details.
 
         Returns the parcel dict for a known parcel, or ``None`` when the
@@ -68,7 +71,9 @@ class AramexApiClient:
             if response.status == 429:
                 retry_after_header = response.headers.get("Retry-After")
                 try:
-                    retry_after = float(retry_after_header) if retry_after_header else None
+                    retry_after = (
+                        float(retry_after_header) if retry_after_header else None
+                    )
                 except ValueError:
                     retry_after = None  # an HTTP-date, not seconds; let the caller's own backoff handle it
                 raise AramexApiError(

@@ -1,4 +1,5 @@
 """Tests for the country-specific Aramex device."""
+
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.aramex.const import CONF_COUNTRY, DOMAIN

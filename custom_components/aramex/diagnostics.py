@@ -1,4 +1,5 @@
 """Diagnostics support for the Aramex parcel tracker integration."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -32,9 +33,18 @@ TO_REDACT = {
     "name",
     "driver",
     "signature",
-    "AddressOnParcel", "Signature", "Name", "Reference", "DistributedTo",
-    "DeliveryFranchise", "CallingCard", "CallingCardNumber", "CompanyInfo",
-    "ParcelConnectAgent", "Courier", "Franchise",
+    "AddressOnParcel",
+    "Signature",
+    "Name",
+    "Reference",
+    "DistributedTo",
+    "DeliveryFranchise",
+    "CallingCard",
+    "CallingCardNumber",
+    "CompanyInfo",
+    "ParcelConnectAgent",
+    "Courier",
+    "Franchise",
 }
 
 

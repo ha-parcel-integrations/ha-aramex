@@ -12,11 +12,12 @@ timestamp parsing, the history builder, the sort contract, the delivered
 filter, the one-shot warning for unmapped statuses — is suite-wide machinery
 and should be left alone.
 """
+
 from __future__ import annotations
 
-import logging
 from collections.abc import Mapping
-from datetime import date, datetime, time, timedelta, timezone, tzinfo
+from datetime import UTC, date, datetime, time, timedelta, tzinfo
+import logging
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
@@ -52,10 +53,15 @@ NEW_ISSUE_URL = (
 # warning that asks the user to report it, which is how the map grows.
 _STATUS_MAP: dict[str, ParcelStatus] = {
     "PP8": ParcelStatus.REGISTERED,
-    **{code: ParcelStatus.IN_TRANSIT for code in ("PPP", "PP1", "PCY", "078", "RIA", "B72", "S2M", "SYD", "TOO", "TRN")},
+    **dict.fromkeys(
+        ("PPP", "PP1", "PCY", "078", "RIA", "B72", "S2M", "SYD", "TOO", "TRN"),
+        ParcelStatus.IN_TRANSIT,
+    ),
     "ONB": ParcelStatus.OUT_FOR_DELIVERY,
-    "R36": ParcelStatus.DELIVERED, "YES": ParcelStatus.DELIVERED,
-    "U03": ParcelStatus.PROBLEM, "UND": ParcelStatus.PROBLEM,
+    "R36": ParcelStatus.DELIVERED,
+    "YES": ParcelStatus.DELIVERED,
+    "U03": ParcelStatus.PROBLEM,
+    "UND": ParcelStatus.PROBLEM,
     "RTS": ParcelStatus.RETURNING,
 }
 
@@ -153,11 +159,11 @@ def parse_iso(value: str | None) -> datetime | None:
     if not value:
         return None
     try:
-        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(str(value))
     except ValueError:
         return None
     if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
+        parsed = parsed.replace(tzinfo=UTC)
     return parsed
 
 
@@ -173,7 +179,7 @@ def to_iso_timestamp(value: Any) -> str | None:
         return None
     if isinstance(value, (int, float)):
         try:
-            return datetime.fromtimestamp(value / 1000, tz=timezone.utc).isoformat()
+            return datetime.fromtimestamp(value / 1000, tz=UTC).isoformat()
         except (OverflowError, OSError, ValueError):
             return None
     return str(value)
@@ -298,7 +304,7 @@ def eta_window(
     if eta_date is None:
         return None, None
     tz_name = TIMEZONES.get(country or "")
-    tz = (_resolve_zone(tz_name, zones) if tz_name else timezone.utc) or timezone.utc
+    tz = (_resolve_zone(tz_name, zones) if tz_name else UTC) or UTC
     return (
         datetime.combine(eta_date, time.min, tz).isoformat(),
         datetime.combine(eta_date, time.max, tz).isoformat(),
@@ -335,7 +341,10 @@ def normalize_parcel(
     history = build_history(scans)
     newest_scan = max(
         (scan for scan in scans if isinstance(scan, dict)),
-        key=lambda scan: parse_iso(to_iso_timestamp(scan.get("RealDateTime") or scan.get("Date"))) or datetime.min.replace(tzinfo=timezone.utc),
+        key=lambda scan: (
+            parse_iso(to_iso_timestamp(scan.get("RealDateTime") or scan.get("Date")))
+            or datetime.min.replace(tzinfo=UTC)
+        ),
         default={},
     )
     tracking_code = result.get("LabelNumber") or raw.get("tracking_code")
@@ -343,11 +352,15 @@ def normalize_parcel(
     status = map_parcel_status(status_code)
     delivered = status is ParcelStatus.DELIVERED
 
-    timestamp = to_iso_timestamp(newest_scan.get("RealDateTime") or newest_scan.get("Date"))
+    timestamp = to_iso_timestamp(
+        newest_scan.get("RealDateTime") or newest_scan.get("Date")
+    )
     country = raw.get("country")
 
     planned_from, planned_to = (
-        (None, None) if delivered else eta_window(result.get("DeliveryETADate"), country, zones)
+        (None, None)
+        if delivered
+        else eta_window(result.get("DeliveryETADate"), country, zones)
     )
 
     return {
@@ -368,7 +381,11 @@ def normalize_parcel(
         "weight": None,
         "dimensions": None,
         "history": history if include_history else None,
-        "raw": {"status": status_code, "status_text": sanitize_status_text(newest_scan.get("StatusDescription")), "timestamp": timestamp},
+        "raw": {
+            "status": status_code,
+            "status_text": sanitize_status_text(newest_scan.get("StatusDescription")),
+            "timestamp": timestamp,
+        },
     }
 
 
@@ -403,14 +420,12 @@ def apply_delivered_filter(parcels: list[dict], entry: ConfigEntry) -> list[dict
     shows.
     """
     options = entry.options
-    filter_type = options.get(
-        CONF_DELIVERED_FILTER_TYPE, DEFAULT_DELIVERED_FILTER_TYPE
-    )
+    filter_type = options.get(CONF_DELIVERED_FILTER_TYPE, DEFAULT_DELIVERED_FILTER_TYPE)
     amount = int(
         options.get(CONF_DELIVERED_FILTER_AMOUNT, DEFAULT_DELIVERED_FILTER_AMOUNT)
     )
     if filter_type == "days":
-        cutoff = datetime.now(timezone.utc) - timedelta(days=amount)
+        cutoff = datetime.now(UTC) - timedelta(days=amount)
         return [
             parcel
             for parcel in parcels

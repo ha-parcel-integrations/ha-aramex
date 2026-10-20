@@ -34,7 +34,9 @@ async def test_user_flow_requires_country_and_creates_hub(hass):
         DOMAIN, context={"source": "user"}
     )
     assert result["type"] == "form"
-    result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_COUNTRY: "nz"})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_COUNTRY: "nz"}
+    )
     assert result["type"] == "create_entry"
     assert result["title"] == "Aramex (NZ)"
     assert result["data"] == {}
@@ -47,7 +49,9 @@ async def test_second_hub_for_same_country_rejected(hass):
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": "user"}
     )
-    result = await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_COUNTRY: "au"})
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_COUNTRY: "au"}
+    )
     assert result["type"] == "abort"
     assert result["reason"] == "already_configured"
 
@@ -129,9 +133,7 @@ async def test_options_accepts_a_code_with_separators(hass):
         result["flow_id"], {"tracking_codes": ["example-123 456"]}
     )
     assert result["type"] == "create_entry"
-    assert result["data"][CONF_PARCELS] == [
-        {CONF_TRACKING_CODE: "example-123 456"}
-    ]
+    assert result["data"][CONF_PARCELS] == [{CONF_TRACKING_CODE: "example-123 456"}]
 
 
 async def test_options_replaces_the_single_label(hass):
@@ -145,7 +147,9 @@ async def test_options_replaces_the_single_label(hass):
 
 
 async def test_options_replaces_a_legacy_multi_label_list(hass):
-    entry = _hub([{CONF_TRACKING_CODE: "EXAMPLE111111"}, {CONF_TRACKING_CODE: "EXAMPLE222222"}])
+    entry = _hub(
+        [{CONF_TRACKING_CODE: "EXAMPLE111111"}, {CONF_TRACKING_CODE: "EXAMPLE222222"}]
+    )
     entry.add_to_hass(hass)
     result = await _open_options_step(hass, entry, "parcels")
     result = await hass.config_entries.options.async_configure(

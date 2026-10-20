@@ -1,4 +1,5 @@
 """Tests for the Aramex refresh button."""
+
 from unittest.mock import AsyncMock, MagicMock
 
 from custom_components.aramex.button import AramexRefreshButton

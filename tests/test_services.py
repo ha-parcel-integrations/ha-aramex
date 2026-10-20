@@ -1,8 +1,9 @@
 """Tests for the Aramex services (track_parcel / untrack_parcel)."""
+
 from unittest.mock import AsyncMock, patch
 
-import pytest
 from homeassistant.exceptions import ServiceValidationError
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.aramex.const import (
@@ -16,7 +17,6 @@ from custom_components.aramex.services import _resolve_entry
 from .payloads import active_sample
 
 _SAMPLE = active_sample()
-
 
 
 async def _setup(hass, parcels: list[dict] | None = None) -> MockConfigEntry:
@@ -67,9 +67,7 @@ async def test_track_parcel_accepts_a_code_with_separators(hass):
         )
         await hass.async_block_till_done()
 
-    assert entry.options[CONF_PARCELS] == [
-        {CONF_TRACKING_CODE: "example-999 999"}
-    ]
+    assert entry.options[CONF_PARCELS] == [{CONF_TRACKING_CODE: "example-999 999"}]
 
 
 async def test_track_parcel_rejects_empty_code(hass):
@@ -99,9 +97,7 @@ async def test_track_parcel_duplicate_is_noop(hass):
 
 
 async def test_untrack_parcel_removes_from_options(hass):
-    entry = await _setup(
-        hass, parcels=[{CONF_TRACKING_CODE: "EXAMPLE999999"}]
-    )
+    entry = await _setup(hass, parcels=[{CONF_TRACKING_CODE: "EXAMPLE999999"}])
     with patch(
         "custom_components.aramex.api.AramexApiClient.async_get_parcel",
         new=AsyncMock(return_value=_SAMPLE),
@@ -118,9 +114,7 @@ async def test_untrack_parcel_removes_from_options(hass):
 
 
 async def test_untrack_unknown_code_is_noop(hass):
-    entry = await _setup(
-        hass, parcels=[{CONF_TRACKING_CODE: "EXAMPLE999999"}]
-    )
+    entry = await _setup(hass, parcels=[{CONF_TRACKING_CODE: "EXAMPLE999999"}])
     with patch(
         "custom_components.aramex.api.AramexApiClient.async_get_parcel",
         new=AsyncMock(return_value=_SAMPLE),
