@@ -29,6 +29,6 @@ def build_device_info(entry: ConfigEntry) -> DeviceInfo:
         manufacturer="Aramex",
         entry_type=DeviceEntryType.SERVICE,
         configuration_url=CONFIGURATION_URLS.get(
-            entry.options.get(CONF_COUNTRY), CONFIGURATION_URLS["AU"]
+            entry.options.get(CONF_COUNTRY, "AU"), CONFIGURATION_URLS["AU"]
         ),
     )

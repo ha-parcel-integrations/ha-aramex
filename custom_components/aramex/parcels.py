@@ -82,8 +82,10 @@ def sanitize_status_text(value: Any) -> str | None:
 
 def sanitize_tracking_payload(raw: dict) -> dict:
     """Keep only the fields normalisation needs; never cache carrier PII."""
-    result = raw.get("result") if isinstance(raw.get("result"), dict) else {}
-    scans = result.get("Scans") if isinstance(result.get("Scans"), list) else []
+    raw_result = raw.get("result")
+    result = raw_result if isinstance(raw_result, dict) else {}
+    raw_scans = result.get("Scans")
+    scans = raw_scans if isinstance(raw_scans, list) else []
     return {
         "country": raw.get("country"),
         "tracking_code": raw.get("tracking_code"),
