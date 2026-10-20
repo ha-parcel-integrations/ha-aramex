@@ -53,7 +53,11 @@ A custom Home Assistant integration for tracking [Aramex](https://www.aramex.com
 
 1. Open HACS and search for **Aramex**.
 2. Install it.
-3. Restart Home Assistant.
+3. Restart Home Assistant if HACS asks you to.
+
+Or click the button below to open it directly in HACS:
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ha-parcel-integrations&repository=ha-aramex&category=integration)
 
 ### Manual
 
@@ -61,7 +65,9 @@ Copy `custom_components/aramex` into your `config/custom_components/` folder and
 
 ## Configuration
 
-Add the integration via **Settings → Devices & Services → Add Integration → Aramex** and select **Australia** or **New Zealand**. This creates a country-specific hub; you can create one AU hub and one NZ hub. Labels added to a hub always use that hub's country dataset.
+[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=aramex)
+
+Or set it up by hand: add the integration via **Settings → Devices & Services → Add Integration → Aramex** and select **Australia** or **New Zealand**. This creates a country-specific hub; you can create one AU hub and one NZ hub. Labels added to a hub always use that hub's country dataset.
 
 Then add parcels via the integration's **Configure** dialog, the [`aramex.track_parcel`](#services) service, or a [dashboard button](examples/dashboards/add_parcel_card.yaml). The tracking code is on your shipping confirmation email or the missed-delivery card.
 
