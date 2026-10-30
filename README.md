@@ -174,7 +174,7 @@ logger:
 ## Troubleshooting
 
 - **A parcel shows `unknown`** — it has no scans yet, the label is wrong, or Aramex reported a scan code that has not been mapped yet. Confirm that the selected country matches the label.
-- **A status logs "Unrecognised Aramex status"** — please [open an issue](https://github.com/ha-parcel-integrations/ha-aramex/issues/new) with the logged line so the mapping can be extended.
+- **A status logs "Unrecognised Aramex status"** — please [open an issue](https://github.com/ha-parcel-integrations/ha-aramex/issues/new?template=unrecognised_status.yml) with the logged line so the mapping can be extended.
 
 ## Related integrations
 
