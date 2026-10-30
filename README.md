@@ -113,6 +113,7 @@ Standard HA removal applies: **Settings → Devices & Services → Aramex → �
 | `sensor.aramex_incoming_parcels` | Number of active tracked parcels, full list under the `parcels` attribute |
 | `sensor.aramex_parcel_<code>` | One per tracked parcel; state is the canonical status, attributes carry the full normalised parcel |
 | `sensor.aramex_delivered_parcels` | Recently delivered parcels (see the retention option) |
+| `calendar.aramex_deliveries` | Read-only calendar of expected deliveries, no extra API calls |
 | `sensor.aramex_last_successful_update` | Diagnostic: when Aramex was last polled successfully |
 
 A delivered parcel moves from its per-parcel sensor to the delivered sensor automatically.
