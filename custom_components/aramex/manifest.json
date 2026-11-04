@@ -1,6 +1,7 @@
 {
   "domain": "aramex",
   "name": "Aramex",
+  "categories": ["productivity_information"],
   "codeowners": [
     "@peter-mdf"
   ],
