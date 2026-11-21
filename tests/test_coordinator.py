@@ -99,7 +99,7 @@ async def test_update_keeps_cached_payload_on_error(hass):
     assert len(coordinator.delivered) == 1
 
 
-async def test_cache_strips_carrier_pii_and_failure_log_hides_label(hass, caplog):
+async def test_cache_keeps_full_record_and_failure_log_hides_label(hass, caplog):
     entry = _entry_with([{CONF_TRACKING_CODE: DELIVERED_CODE}])
     entry.add_to_hass(hass)
     sample = delivered_sample()
@@ -112,9 +112,8 @@ async def test_cache_strips_carrier_pii_and_failure_log_hides_label(hass, caplog
     await coordinator._async_update_data()
 
     cached = coordinator._raw_cache[DELIVERED_CODE]
-    assert "AddressOnParcel" not in str(cached)
-    assert "Signature" not in str(cached)
-    assert "Name" not in str(cached)
+    assert cached["result"]["AddressOnParcel"] == "1 Private Street"
+    assert cached["result"]["Scans"][0]["Name"] == "Private Person"
 
     client.async_get_parcel.side_effect = AramexApiError("HTTP 500")
     await coordinator._async_update_data()

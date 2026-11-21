@@ -67,3 +67,42 @@ async def test_diagnostics_reports_suspended_polling(hass):
         "update_interval_seconds": None,
         "suspended": True,
     }
+
+
+async def test_diagnostics_redacts_personal_fields_in_the_full_raw_record(hass):
+    entry = MagicMock()
+    entry.options = {"parcels": []}
+    entry.runtime_data.coordinator.current_tier_minutes = 15
+    entry.runtime_data.coordinator.update_interval = timedelta(minutes=15)
+    personal = {
+        "AddressOnParcel": "1 Example St",
+        "Signature": "J Doe",
+        "Reference": "order-1",
+        "ConsigneeName": "Jane Doe",
+        "Phone": "0400000000",
+        "Email": "jane@example.com",
+        "PostCode": "2000",
+        "Suburb": "Sydney",
+        "AddressLine1": "1 Example St",
+        "LabelNumber": "MP0085494934",
+    }
+    entry.runtime_data.coordinator.data = [
+        {
+            "status": "in_transit",
+            "raw": {
+                "country": "AU",
+                "tracking_code": "MP0085494934",
+                "result": {**personal, "Scans": [{"Status": "PPP"}]},
+            },
+        }
+    ]
+    entry.runtime_data.coordinator.delivered = []
+    entry.runtime_data.coordinator.delivered_codes = set()
+
+    result = await async_get_config_entry_diagnostics(hass, entry)
+
+    raw = result["incoming"][0]["raw"]
+    assert raw["tracking_code"] == "**REDACTED**"
+    for key in personal:
+        assert raw["result"][key] == "**REDACTED**", key
+    assert raw["result"]["Scans"] == [{"Status": "PPP"}]

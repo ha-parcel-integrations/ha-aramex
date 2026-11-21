@@ -82,34 +82,6 @@ def sanitize_status_text(value: Any) -> str | None:
     return cleaned[:200] or None
 
 
-def sanitize_tracking_payload(raw: dict) -> dict:
-    """Keep only the fields normalisation needs; never cache carrier PII."""
-    raw_result = raw.get("result")
-    result = raw_result if isinstance(raw_result, dict) else {}
-    raw_scans = result.get("Scans")
-    scans = raw_scans if isinstance(raw_scans, list) else []
-    return {
-        "country": raw.get("country"),
-        "tracking_code": raw.get("tracking_code"),
-        "result": {
-            "LabelNumber": result.get("LabelNumber"),
-            "DeliveryETADate": result.get("DeliveryETADate"),
-            "Scans": [
-                {
-                    "Status": scan.get("Status"),
-                    "StatusDescription": sanitize_status_text(
-                        scan.get("StatusDescription")
-                    ),
-                    "RealDateTime": scan.get("RealDateTime"),
-                    "Date": scan.get("Date"),
-                }
-                for scan in scans
-                if isinstance(scan, dict)
-            ],
-        },
-    }
-
-
 def _warn_unmapped_status(code: str) -> None:
     """Log an unmapped carrier status once, with a copy-paste issue link."""
     if code in _unmapped_statuses_logged:
@@ -440,8 +412,8 @@ def normalize_parcel(
       :func:`format_dimensions`).
     * ``history`` is ``None`` when the option is off — the key still exists.
     """
-    raw = sanitize_tracking_payload(raw)
-    result = raw["result"]
+    raw_result = raw.get("result")
+    result = raw_result if isinstance(raw_result, dict) else {}
     scans = result.get("Scans") if isinstance(result.get("Scans"), list) else []
     history = build_history(scans)
     newest_scan = max(
@@ -478,17 +450,21 @@ def normalize_parcel(
         "delivered_at": timestamp if delivered else None,
         "planned_from": planned_from,
         "planned_to": planned_to,
-        "pickup": False,
+        "pickup": is_pickup(
+            None,
+            status,
+            (
+                map_event_status(scan.get("Status"))
+                for scan in scans
+                if isinstance(scan, dict)
+            ),
+        ),
         "pickup_point": None,
         "url": tracking_url(tracking_code, country),
         "weight": None,
         "dimensions": None,
         "history": history if include_history else None,
-        "raw": {
-            "status": status_code,
-            "status_text": sanitize_status_text(newest_scan.get("StatusDescription")),
-            "timestamp": timestamp,
-        },
+        "raw": raw,
     }
 
 

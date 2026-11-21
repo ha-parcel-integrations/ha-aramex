@@ -7,6 +7,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.aramex.const import CAPABILITIES, DOMAIN, ParcelStatus
 from custom_components.aramex.parcels import (
+    _STATUS_MAP,
     apply_delivered_filter,
     build_history,
     eta_window,
@@ -98,7 +99,7 @@ def test_history_ignores_missing_or_bad_events():
     assert build_history(["bad", {"Status": "PPP"}]) == []
 
 
-def test_normalize_uses_selected_country_and_redacts_pii():
+def test_normalize_uses_selected_country_and_keeps_full_raw():
     raw = _raw(
         "NZ",
         [
@@ -133,11 +134,9 @@ def test_normalize_uses_selected_country_and_redacts_pii():
     assert parcel["status"] is ParcelStatus.DELIVERED
     assert parcel["delivered_at"] == "2026-05-04T10:00:00Z"
     assert parcel["history"][0]["status"] is ParcelStatus.REGISTERED
-    assert parcel["raw"] == {
-        "status": "R36",
-        "status_text": "Delivered",
-        "timestamp": "2026-05-04T10:00:00Z",
-    }
+    assert parcel["raw"] is raw
+    assert parcel["raw"]["result"]["AddressOnParcel"] == "private"
+    assert parcel["raw"]["result"]["Signature"] == "private"
     assert (
         parcel["sender"]
         is parcel["receiver"]
@@ -150,7 +149,8 @@ def test_normalize_uses_selected_country_and_redacts_pii():
     )
 
 
-def test_eta_window_parses_ddmmyyyy_into_local_all_day_window():
+async def test_eta_window_parses_ddmmyyyy_into_local_all_day_window(hass):
+    await hass.config.async_set_time_zone("Australia/Sydney")
     planned_from, planned_to = eta_window("14/02/2025", "AU")
     assert planned_from == "2025-02-14T00:00:00+11:00"
     assert planned_to == "2025-02-14T23:59:59+11:00"
@@ -159,7 +159,8 @@ def test_eta_window_parses_ddmmyyyy_into_local_all_day_window():
     assert eta_window("not-a-date", "AU") == (None, None)
 
 
-def test_normalize_fills_planned_window_from_eta_unless_delivered():
+async def test_normalize_fills_planned_window_from_eta_unless_delivered(hass):
+    await hass.config.async_set_time_zone("Australia/Sydney")
     raw = _raw("AU", [_scan("PPP", "2026-04-29T10:00:00Z")], eta_date="03/08/2026")
     parcel = normalize_parcel(raw)
     assert parcel["planned_from"] == "2026-08-03T00:00:00+10:00"
@@ -237,13 +238,40 @@ def test_sort_and_delivered_filter():
 
 
 def test_zone_names_is_the_countrys_zone():
-    assert zone_names({"country": "AU"}) == {"Australia/Sydney"}
+    assert zone_names({"country": "AU"}) == set()
     assert zone_names({"country": "NZ"}) == {"Pacific/Auckland"}
     assert zone_names({"country": "XX"}) == set()
 
 
-def test_eta_window_uses_the_zones_the_coordinator_resolved():
-    zones = {"Australia/Sydney": ZoneInfo("Australia/Sydney")}
-    planned_from, planned_to = eta_window("14/02/2025", "AU", zones)
-    assert planned_from == "2025-02-14T00:00:00+11:00"
-    assert planned_to.startswith("2025-02-14T23:59:59")
+async def test_australia_uses_the_home_assistant_zone(hass):
+    await hass.config.async_set_time_zone("Australia/Perth")
+    planned_from, planned_to = eta_window("14/02/2025", "AU")
+    assert planned_from == "2025-02-14T00:00:00+08:00"
+    assert planned_to == "2025-02-14T23:59:59+08:00"
+    await hass.config.async_set_time_zone("Australia/Sydney")
+    assert eta_window("14/02/2025", "AU")[0] == "2025-02-14T00:00:00+11:00"
+
+
+async def test_new_zealand_stays_auckland(hass):
+    await hass.config.async_set_time_zone("Australia/Perth")
+    zones = {"Pacific/Auckland": ZoneInfo("Pacific/Auckland")}
+    assert eta_window("14/02/2025", "NZ", zones)[0] == "2025-02-14T00:00:00+13:00"
+
+
+def test_pickup_follows_status_and_history(monkeypatch):
+    monkeypatch.setitem(_STATUS_MAP, "PUP", ParcelStatus.AT_PICKUP_POINT)
+    at_point = normalize_parcel(_raw("AU", [_scan("PUP", "2026-05-04T10:00:00Z")]))
+    assert at_point["pickup"] is True
+    assert at_point["pickup_point"] is None
+    collected = normalize_parcel(
+        _raw(
+            "AU",
+            [
+                _scan("PUP", "2026-05-03T10:00:00Z"),
+                _scan("R36", "2026-05-04T10:00:00Z", "Delivered"),
+            ],
+        )
+    )
+    assert collected["pickup"] is True
+    plain = normalize_parcel(_raw("AU", [_scan("R36", "2026-05-04T10:00:00Z")]))
+    assert plain["pickup"] is False

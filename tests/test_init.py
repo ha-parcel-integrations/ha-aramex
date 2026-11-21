@@ -36,6 +36,10 @@ async def test_setup_and_unload(hass):
     assert incoming is not None
     assert incoming.state == "1"
 
+    # Both pickup-point sensors exist even before any pickup parcel is seen.
+    assert hass.states.get("sensor.aramex_au_awaiting_pickup").state == "0"
+    assert hass.states.get("sensor.aramex_au_en_route_to_pickup_point").state == "0"
+
     # Services registered on setup...
     assert hass.services.has_service(DOMAIN, "track_parcel")
 
@@ -139,3 +143,33 @@ async def test_options_update_applies_live_without_reload(hass):
 
     incoming = hass.states.get("sensor.aramex_au_incoming_parcels")
     assert incoming.state == "2"
+
+
+async def test_pickup_sensors_survive_stale_sweep(hass):
+    """Restored pickup-point sensors are not swept as stale per-parcel sensors."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=DOMAIN,
+        options={CONF_PARCELS: [{CONF_TRACKING_CODE: ACTIVE_CODE}]},
+    )
+    entry.add_to_hass(hass)
+    registry = er.async_get(hass)
+    for suffix in ("awaiting_pickup", "en_route_to_pickup_point"):
+        registry.async_get_or_create(
+            "sensor",
+            DOMAIN,
+            f"{entry.entry_id}_{suffix}",
+            config_entry=entry,
+        )
+
+    with patch(
+        "custom_components.aramex.api.AramexApiClient.async_get_parcel",
+        new=AsyncMock(return_value=_sample()),
+    ):
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    for suffix in ("awaiting_pickup", "en_route_to_pickup_point"):
+        assert registry.async_get_entity_id(
+            "sensor", DOMAIN, f"{entry.entry_id}_{suffix}"
+        )

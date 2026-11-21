@@ -5,7 +5,9 @@ from unittest.mock import MagicMock
 
 from custom_components.aramex.const import ParcelStatus
 from custom_components.aramex.sensor import (
+    AramexAwaitingPickupSensor,
     AramexDeliveredParcelsSensor,
+    AramexEnRouteToPickupPointSensor,
     AramexIncomingParcelsSensor,
     AramexLastUpdateSensor,
     AramexNextDeliverySensor,
@@ -124,3 +126,38 @@ def test_last_update_sensor():
     coordinator.last_success_time = moment
     sensor = AramexLastUpdateSensor(coordinator, _entry())
     assert sensor.native_value == moment
+
+
+def _pickup_coordinator() -> MagicMock:
+    return _coordinator(
+        [
+            _parcel("EN", ParcelStatus.IN_TRANSIT, pickup=True),
+            _parcel("OFD", ParcelStatus.OUT_FOR_DELIVERY, pickup=True),
+            _parcel("AT", ParcelStatus.AT_PICKUP_POINT, pickup=True),
+            _parcel("RET", ParcelStatus.RETURNING, pickup=True),
+            _parcel("HOME", ParcelStatus.IN_TRANSIT),
+        ],
+        delivered=[_parcel("DONE", ParcelStatus.DELIVERED, pickup=True)],
+    )
+
+
+def test_en_route_to_pickup_point_sensor():
+    sensor = AramexEnRouteToPickupPointSensor(_pickup_coordinator(), _entry())
+    assert sensor.native_value == 2
+    codes = [p["barcode"] for p in sensor.extra_state_attributes["parcels"]]
+    assert codes == ["EN", "OFD"]
+    assert sensor.unique_id == "e1_en_route_to_pickup_point"
+
+
+def test_awaiting_pickup_sensor():
+    sensor = AramexAwaitingPickupSensor(_pickup_coordinator(), _entry())
+    assert sensor.native_value == 1
+    assert sensor.extra_state_attributes["parcels"][0]["barcode"] == "AT"
+    assert sensor.unique_id == "e1_awaiting_pickup"
+
+
+def test_pickup_sensors_empty_without_data():
+    coordinator = _coordinator([])
+    coordinator.data = None
+    assert AramexAwaitingPickupSensor(coordinator, _entry()).native_value == 0
+    assert AramexEnRouteToPickupPointSensor(coordinator, _entry()).native_value == 0

@@ -38,7 +38,6 @@ from .const import (
 from .parcels import (
     apply_delivered_filter,
     normalize_parcel,
-    sanitize_tracking_payload,
     sort_parcels_by_ts,
     zone_names,
 )
@@ -314,9 +313,8 @@ class AramexCoordinator(DataUpdateCoordinator[list[dict]]):
             # The response's own tracking number can be missing on edge
             # payloads; fall back to the code we asked for so the sensor keeps
             # its key.
-            sanitized = sanitize_tracking_payload(result)
-            self._raw_cache[code] = sanitized
-            raws_by_code[code] = sanitized
+            self._raw_cache[code] = result
+            raws_by_code[code] = result
 
         # Codes skipped from the fetch above (already confirmed delivered) —
         # re-add their cached payload so the delivered sensor keeps its data

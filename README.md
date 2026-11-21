@@ -35,7 +35,7 @@ A custom Home Assistant integration for tracking [Aramex](https://www.aramex.com
 
 - Track any number of Aramex parcels by tracking code — no account needed
 - Per-parcel sensor with the canonical status, the carrier's own status text and a public tracking-page link
-- Summary sensors: incoming parcels, next delivery, recently delivered parcels
+- Summary sensors: incoming parcels, next delivery, en route to pickup point, awaiting pickup, recently delivered parcels
 - `aramex.track_parcel` / `aramex.untrack_parcel` services, so a dashboard button can add a parcel
 - Events + device triggers for no-code automations (parcel registered, status changed and delivered)
 - Opt-in per-parcel status history
@@ -112,6 +112,8 @@ Standard HA removal applies: **Settings → Devices & Services → Aramex → �
 |---|---|
 | `sensor.aramex_incoming_parcels` | Number of active tracked parcels, full list under the `parcels` attribute |
 | `sensor.aramex_parcel_<code>` | One per tracked parcel; state is the canonical status, attributes carry the full normalised parcel |
+| `sensor.aramex_en_route_to_pickup_point` | Active parcels heading for a pickup point but not there yet (0 until Aramex reports one) |
+| `sensor.aramex_awaiting_pickup` | Parcels waiting at a pickup point (0 until Aramex reports one) |
 | `sensor.aramex_delivered_parcels` | Recently delivered parcels (see the retention option) |
 | `calendar.aramex_deliveries` | Read-only calendar of expected deliveries, no extra API calls |
 | `sensor.aramex_last_successful_update` | Diagnostic: when Aramex was last polled successfully |

@@ -37,15 +37,20 @@ This repo follows it exactly.
   summary+diagnostic sensors. Add a new non-parcel sensor's unique_id to the set.
 - **Per-parcel sensors are removed by the summary sensor** via
   `entity_registry.async_remove` (self-removal races and leaves ghosts).
-- **If this carrier can reach `ParcelStatus.AT_PICKUP_POINT` from a real raw
-  status/code**, it needs an `awaiting_pickup` sensor — see *Parcel contract*
-  in `CONVENTIONS.md`. Say "pickup point", not "ServicePoint"/"parcel
-  shop"/"locker", for the generic concept. `ha-dhl-nl`, `ha-dpd`, `ha-gls`,
-  `ha-inpost` are reference implementations. `aramex` is **exempt**: the AU/NZ
-  scan feed has no pickup-point delivery method — none of the observed scan
-  codes maps to `AT_PICKUP_POINT`, and `pickup`/`pickup_point` are always
-  `False`/`None` — so there is deliberately no `awaiting_pickup` sensor. Add
-  one if a real parcel ever surfaces a pickup-point code.
+- **The pickup-point summaries are a pair.** A carrier that can deliver to a
+  pickup point or locker exposes both `en_route_to_pickup_point` and
+  `awaiting_pickup`, even before a real parcel has shown the status or flag
+  (they read 0 until then; record it in `PENDING_*`). A carrier without pickup
+  points exposes neither and keeps `pickup` constantly False.
+  See *Parcel contract* in `CONVENTIONS.md`. Say "pickup point", not
+  "ServicePoint"/"parcel shop"/"locker", for the generic concept; the
+  example carrier demonstrates both canonical sensors.
+  Aramex ships both `awaiting_pickup` and `en_route_to_pickup_point`. `pickup`
+  comes from `is_pickup` (status or any scan mapping to `AT_PICKUP_POINT`),
+  and `pickup_point` stays `None` until a real pickup-point name is seen.
+  Pending evidence: no observed scan code maps to `AT_PICKUP_POINT` yet, so
+  both sensors read 0; map the code and fill `pickup_point` when one shows up
+  (`PENDING_CAPABILITIES`).
 
 ## Carrier-specific notes
 
@@ -53,12 +58,11 @@ This integration is deliberately limited to the keyless Australian and New
 Zealand datasets. Setup selects one country; labels keep that country and are
 never retried against the other host. There is no global Aramex fallback.
 
-The API contains recipient and delivery data. Normalisation retains only scan
-code, cleaned status text and timestamp in `raw`; sender, receiver, weight,
-dimensions and pickup-point fields are intentionally `None`. `planned_from`/
+The API contains recipient and delivery data. `raw` is the full carrier record; diagnostics redact the personal fields (`TO_REDACT`). Sender, receiver, weight,
+dimensions and `pickup_point` are intentionally `None`. `planned_from`/
 `planned_to` come from `result.DeliveryETADate` (`DD/MM/YYYY`, date-only) —
-turned into an all-day window (00:00:00 to 23:59:59) in the entry's country
-timezone, and cleared once delivered, returning or at a pickup point. It is the carrier's booking-time estimate, not
+turned into an all-day window (00:00:00 to 23:59:59) in the carrier's zone
+(Pacific/Auckland for NZ; Home Assistant's own zone for AU, which spans several), and cleared once delivered, returning or at a pickup point. It is the carrier's booking-time estimate, not
 recomputed as the parcel moves, so a delayed parcel can carry a date already in the past —
 surface it as-is rather than guessing a correction. History is opt-in.
 The observed AU `CNS` scan reports that the parcel left a facility for the

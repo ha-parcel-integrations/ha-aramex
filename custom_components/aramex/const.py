@@ -52,6 +52,9 @@ KNOWN_CAPABILITIES = frozenset(
 #   "history"            the include_history option is implemented and does something
 CAPABILITIES = frozenset({"delivery_window", "url", "history"})
 
+# Awaiting a real parcel: no pickup-point scan or name has been seen yet.
+PENDING_CAPABILITIES: frozenset[str] = frozenset({"pickup_point"})
+
 # If this carrier ever grows a second backend with a genuinely different
 # payload shape (a country-specific API, not just a config option), replace
 # the single CAPABILITIES above with a CAPABILITIES_BY_VARIANT dict instead:
@@ -85,9 +88,10 @@ TRACKING_URL_BASES = {
     "NZ": "https://www.aramex.co.nz/tools/track",
 }
 
-# Local timezone per country, used only to turn the payload's date-only
+# Countries with a single zone, used only to turn the payload's date-only
 # ``DeliveryETADate`` into an all-day ``planned_from``/``planned_to`` window.
-TIMEZONES = {"AU": "Australia/Sydney", "NZ": "Pacific/Auckland"}
+# Australia spans several zones, so it uses Home Assistant's own.
+TIMEZONES = {"NZ": "Pacific/Auckland"}
 
 # Tracked parcels live in the config entry options as a list of
 # ``{tracking_code}`` dicts — this carrier has no account or parcel feed, so the
