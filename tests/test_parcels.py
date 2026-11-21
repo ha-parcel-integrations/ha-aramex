@@ -153,7 +153,7 @@ def test_normalize_uses_selected_country_and_redacts_pii():
 def test_eta_window_parses_ddmmyyyy_into_local_all_day_window():
     planned_from, planned_to = eta_window("14/02/2025", "AU")
     assert planned_from == "2025-02-14T00:00:00+11:00"
-    assert planned_to == "2025-02-14T23:59:59.999999+11:00"
+    assert planned_to == "2025-02-14T23:59:59+11:00"
     assert eta_window("14/02/2025", "NZ")[0] == "2025-02-14T00:00:00+13:00"
     assert eta_window(None, "AU") == (None, None)
     assert eta_window("not-a-date", "AU") == (None, None)
@@ -163,7 +163,7 @@ def test_normalize_fills_planned_window_from_eta_unless_delivered():
     raw = _raw("AU", [_scan("PPP", "2026-04-29T10:00:00Z")], eta_date="03/08/2026")
     parcel = normalize_parcel(raw)
     assert parcel["planned_from"] == "2026-08-03T00:00:00+10:00"
-    assert parcel["planned_to"] == "2026-08-03T23:59:59.999999+10:00"
+    assert parcel["planned_to"] == "2026-08-03T23:59:59+10:00"
 
     delivered_raw = _raw(
         "AU", [_scan("R36", "2026-05-04T10:00:00Z")], eta_date="03/08/2026"

@@ -57,9 +57,9 @@ The API contains recipient and delivery data. Normalisation retains only scan
 code, cleaned status text and timestamp in `raw`; sender, receiver, weight,
 dimensions and pickup-point fields are intentionally `None`. `planned_from`/
 `planned_to` come from `result.DeliveryETADate` (`DD/MM/YYYY`, date-only) —
-turned into an all-day window in the entry's country timezone, and cleared
-once delivered. It is the carrier's booking-time estimate, not recomputed as
-the parcel moves, so a delayed parcel can carry a date already in the past —
+turned into an all-day window (00:00:00 to 23:59:59) in the entry's country
+timezone, and cleared once delivered, returning or at a pickup point. It is the carrier's booking-time estimate, not
+recomputed as the parcel moves, so a delayed parcel can carry a date already in the past —
 surface it as-is rather than guessing a correction. History is opt-in.
 The observed AU `CNS` scan reports that the parcel left a facility for the
 next destination, so it maps to `in_transit`.
