@@ -116,6 +116,7 @@ def test_normalize_uses_selected_country_and_keeps_full_raw():
         "barcode",
         "sender",
         "receiver",
+        "contents",
         "status",
         "raw_status",
         "delivered",

@@ -37,6 +37,7 @@ A custom Home Assistant integration for tracking [Aramex](https://www.aramex.com
 - Per-parcel sensor with the canonical status, the carrier's own status text and a public tracking-page link
 - Summary sensors: incoming parcels, next delivery, en route to pickup point, awaiting pickup, recently delivered parcels
 - `aramex.track_parcel` / `aramex.untrack_parcel` services, so a dashboard button can add a parcel
+- A `contents` field on every parcel, set in your own words with the `aramex.update_contents` service or the `contents` field of `aramex.track_parcel`; it titles the calendar event and shows on the next-delivery sensor
 - Events + device triggers for no-code automations (parcel registered, status changed and delivered)
 - Opt-in per-parcel status history
 - Manual refresh button and a diagnostic last-update sensor
@@ -152,8 +153,11 @@ Every payload is the full normalised parcel plus the hub's `device_id`. Events a
 
 | Service | Fields | Description |
 |---|---|---|
-| `aramex.track_parcel` | `tracking_code` | Start tracking a parcel |
+| `aramex.track_parcel` | `tracking_code`, `country` (optional), `contents` (optional) | Start tracking a parcel, optionally noting what is in it |
 | `aramex.untrack_parcel` | `tracking_code` | Stop tracking a parcel |
+| `aramex.update_contents` | `tracking_code`, `contents` (optional), `config_entry_id` (optional) | Set what is in a parcel, tracked or not; an empty `contents` clears it. It goes to every hub that follows the code, or to the one named by `config_entry_id`; with several hubs set up, a code no hub follows is refused unless you name the hub |
+
+The `contents` text is stored locally, shows as the parcel's `contents` field, titles its calendar event and shows on the next-delivery sensor.
 
 ## Examples
 

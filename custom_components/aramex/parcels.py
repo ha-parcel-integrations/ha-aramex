@@ -442,6 +442,7 @@ def normalize_parcel(
         "barcode": tracking_code,
         "sender": None,
         "receiver": None,
+        "contents": None,
         "status": status,
         "raw_status": sanitize_status_text(newest_scan.get("StatusDescription"))
         or status_code,

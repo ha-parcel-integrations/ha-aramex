@@ -40,6 +40,7 @@ def _parcel(
         "barcode": barcode,
         "sender": "Sender",
         "receiver": None,
+        "contents": None,
         "status": status,
         "pickup": pickup,
         "planned_from": planned_from,
@@ -161,3 +162,10 @@ def test_pickup_sensors_empty_without_data():
     coordinator.data = None
     assert AramexAwaitingPickupSensor(coordinator, _entry()).native_value == 0
     assert AramexEnRouteToPickupPointSensor(coordinator, _entry()).native_value == 0
+
+
+def test_next_delivery_exposes_contents():
+    parcel = _parcel("A", planned_from="2099-05-01T10:00:00Z")
+    parcel["contents"] = "Running shoes"
+    sensor = AramexNextDeliverySensor(_coordinator([parcel]), _entry())
+    assert sensor.extra_state_attributes["contents"] == "Running shoes"
