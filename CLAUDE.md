@@ -65,8 +65,6 @@ turned into an all-day window (00:00:00 to 23:59:59) in the carrier's zone
 (Pacific/Auckland for NZ; Home Assistant's own zone for AU, which spans several), and cleared once delivered, returning or at a pickup point. It is the carrier's booking-time estimate, not
 recomputed as the parcel moves, so a delayed parcel can carry a date already in the past —
 surface it as-is rather than guessing a correction. History is opt-in.
-The observed AU `CNS` scan reports that the parcel left a facility for the
-next destination, so it maps to `in_transit`.
 Unknown scan codes produce a one-shot warning. `url` is a confirmed
 `?l=<label>` deep link (`TRACKING_URL_BASES` in `const.py`), not just the
 bare tracking page. API mechanics live in the private

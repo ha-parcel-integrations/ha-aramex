@@ -55,10 +55,9 @@ NEW_ISSUE_URL = (
 _STATUS_MAP: dict[str, ParcelStatus] = {
     "PP8": ParcelStatus.REGISTERED,
     **dict.fromkeys(
-        ("PPP", "PP1", "PCY", "078", "RIA", "B72", "S2M", "SYD", "TOO", "TRN"),
+        ("PPP", "PP1", "PCY", "078", "RIA", "B72", "S2M", "SYD", "TOO", "TRN", "CNS"),
         ParcelStatus.IN_TRANSIT,
     ),
-    "CNS": ParcelStatus.IN_TRANSIT,
     "ONB": ParcelStatus.OUT_FOR_DELIVERY,
     "R36": ParcelStatus.DELIVERED,
     "YES": ParcelStatus.DELIVERED,
