@@ -413,7 +413,8 @@ def normalize_parcel(
     """
     raw_result = raw.get("result")
     result = raw_result if isinstance(raw_result, dict) else {}
-    scans = result.get("Scans") if isinstance(result.get("Scans"), list) else []
+    raw_scans = result.get("Scans")
+    scans: list = raw_scans if isinstance(raw_scans, list) else []
     history = build_history(scans)
     newest_scan = max(
         (scan for scan in scans if isinstance(scan, dict)),
