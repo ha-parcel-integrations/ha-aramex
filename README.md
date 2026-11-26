@@ -125,7 +125,7 @@ The `status` field is the carrier-agnostic enum shared by the whole integration 
 | Status | Meaning |
 |---|---|
 | `registered` | Announced / received by Aramex |
-| `in_transit` | In the sorting network |
+| `in_transit` | In the sorting network or moving between facilities |
 | `out_for_delivery` | With the courier today |
 | `delivered` | Delivered |
 | `returning` | Going back to the sender |

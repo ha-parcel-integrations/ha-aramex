@@ -47,6 +47,7 @@ def _raw(country="AU", scans=None, label="MP0085494934", eta_date=None) -> dict:
         ("PP8", ParcelStatus.REGISTERED),
         ("PPP", ParcelStatus.IN_TRANSIT),
         ("TRN", ParcelStatus.IN_TRANSIT),
+        ("CNS", ParcelStatus.IN_TRANSIT),
         ("ONB", ParcelStatus.OUT_FOR_DELIVERY),
         ("R36", ParcelStatus.DELIVERED),
         ("YES", ParcelStatus.DELIVERED),

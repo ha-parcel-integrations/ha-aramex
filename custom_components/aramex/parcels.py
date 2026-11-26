@@ -57,6 +57,7 @@ _STATUS_MAP: dict[str, ParcelStatus] = {
         ("PPP", "PP1", "PCY", "078", "RIA", "B72", "S2M", "SYD", "TOO", "TRN"),
         ParcelStatus.IN_TRANSIT,
     ),
+    "CNS": ParcelStatus.IN_TRANSIT,
     "ONB": ParcelStatus.OUT_FOR_DELIVERY,
     "R36": ParcelStatus.DELIVERED,
     "YES": ParcelStatus.DELIVERED,
