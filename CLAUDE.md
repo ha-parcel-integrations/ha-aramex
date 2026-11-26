@@ -61,6 +61,8 @@ turned into an all-day window in the entry's country timezone, and cleared
 once delivered. It is the carrier's booking-time estimate, not recomputed as
 the parcel moves, so a delayed parcel can carry a date already in the past —
 surface it as-is rather than guessing a correction. History is opt-in.
+The observed AU `CNS` scan reports that the parcel left a facility for the
+next destination, so it maps to `in_transit`.
 Unknown scan codes produce a one-shot warning. `url` is a confirmed
 `?l=<label>` deep link (`TRACKING_URL_BASES` in `const.py`), not just the
 bare tracking page. API mechanics live in the private
